@@ -8,3 +8,4 @@ __pycache__/
 deepsearch.log
 *.log
 config.yml
+.DS_Store
