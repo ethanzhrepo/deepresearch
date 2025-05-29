@@ -1,0 +1,369 @@
+development:
+  debug_mode: false
+  dev_tools:
+    auto_reload: false
+    show_stack_traces: true
+  enable_profiling: false
+  testing:
+    mock_api_calls: false
+    test_data_dir: tests/data
+  verbose_logging: false
+file_storage:
+  dropbox:
+    timeout: 30
+  google_drive:
+    credentials_file: credentials.json
+    scopes:
+    - https://www.googleapis.com/auth/drive.readonly
+    - https://www.googleapis.com/auth/drive.file
+    token_file: token.json
+i18n:
+  default_language: zh-CN
+  language_settings:
+    en-US:
+      date_format: '%B %d, %Y'
+      number_format: western
+    zh-CN:
+      date_format: '%Y年%m月%d日'
+      number_format: chinese
+  supported_languages:
+  - zh-CN
+  - en-US
+  - ja-JP
+llm:
+  default_provider: claude
+  
+  # Agent特定LLM配置
+  agent_llms:
+    OutlineAgent: "claude"      # 大纲生成使用 Claude
+    ContentWriter: "openai"     # 内容写作使用 OpenAI
+    TaskSplitter: "gemini"      # 任务分解使用 Gemini
+    CodeRunnerHelper: "ollama"  # 代码生成辅助使用 Ollama
+    DataAnalyzer: "openai"      # 数据分析使用 OpenAI
+    SearchQueryBuilder: "gemini" # 搜索查询构建使用 Gemini
+  
+  # 任务特定LLM配置
+  task_specific_models:
+    outline_generation:
+      provider: "claude"
+      model: "claude-3-sonnet-20240229"
+      temperature: 0.3
+      max_tokens: 3000
+    content_generation:
+      provider: "openai"
+      model: "gpt-4-turbo-preview"
+      temperature: 0.7
+      max_tokens: 2000
+    final_report:
+      provider: "openai"
+      model: "gpt-4-turbo-preview"
+      temperature: 0.5
+      max_tokens: 4000
+    code_generation:
+      provider: "ollama"
+      model: "qwen3:14b"
+      temperature: 0.2
+      max_tokens: 1500
+    data_analysis:
+      provider: "openai"
+      model: "gpt-4-turbo-preview"
+      temperature: 0.3
+      max_tokens: 2500
+  
+  # OpenAI配置
+  openai:
+    max_tokens: 4000
+    model: gpt-4-turbo-preview
+    temperature: 0.7
+    timeout: 60
+  
+  # Claude配置
+  claude:
+    max_tokens: 4000
+    model: claude-3-sonnet-20240229
+    temperature: 0.7
+    timeout: 60
+  
+  # Gemini配置
+  gemini:
+    max_tokens: 4000
+    model: gemini-pro
+    temperature: 0.7
+    timeout: 60
+  
+  # Ollama配置
+  ollama:
+    base_url: http://localhost:11434
+    max_tokens: 4000
+    model: qwen3:14b
+    temperature: 0.7
+    timeout: 60
+  
+  # DeepSeek配置
+  deepseek:
+    max_tokens: 4000
+    model: deepseek-coder
+    temperature: 0.7
+    timeout: 60
+mcp:
+  capability_mapping:
+    analysis:
+      priority: 3
+      tools:
+      - python_executor
+      - data_analysis
+    browser:
+      priority: 6
+      tools:
+      - browser_automation
+      - browser_use
+    file:
+      priority: 2
+      tools:
+      - file_reader
+    llm:
+      priority: 5
+      tools:
+      - llm_generation
+    script:
+      priority: 4
+      tools:
+      - python_executor
+    search:
+      priority: 1
+      tools:
+      - web_search
+  execution:
+    batch_size: 3
+    failure_threshold: 0.3
+    timeout_per_batch: 300
+  performance_tracking:
+    enabled: true
+    track_execution_time: true
+    track_resource_usage: true
+    track_success_rate: true
+output:
+  file_naming:
+    max_filename_length: 100
+    pattern: '{topic}_{timestamp}'
+    sanitize_filename: true
+    timestamp_format: '%Y%m%d_%H%M%S'
+  markdown:
+    formatting:
+      code_block_style: fenced
+      emphasis_style: asterisk
+      heading_style: atx
+    include_metadata: true
+    include_sources: true
+    include_timestamps: true
+    include_toc: true
+    templates:
+      report_template: default
+      section_template: academic
+search:
+  authority_sites:
+  - arxiv.org
+  - scholar.google.com
+  - ieee.org
+  - nature.com
+  - science.org
+  - acm.org
+  - springer.com
+  - wiley.com
+  - pubmed.ncbi.nlm.nih.gov
+  - who.int
+  - gov.cn
+  - edu.cn
+  - gc.ca
+  default_engine: tavily  # 默认使用 Tavily（专为 AI 应用设计）
+  enable_authority_search: true
+  enable_google_docs: true
+  enable_arxiv_search: true  # 启用 Arxiv 学术搜索
+  engines:
+    # Tavily - 专为 AI 应用设计的专业搜索 API
+    tavily:
+      enabled: true
+      # 高质量搜索结果，专门为 AI 应用优化
+      include_answer: true
+      include_raw_content: false
+      max_results: 10
+    
+    # DuckDuckGo - 注重隐私的搜索引擎
+    duckduckgo:
+      enabled: true
+      region: cn-zh
+      safe_search: moderate
+      # 无需 API 密钥
+    
+    # Brave Search - 具有高级功能的注重隐私搜索
+    brave:
+      enabled: true
+      country: "CN"
+      search_lang: "zh"
+      ui_lang: "zh-CN"
+      # 需要 BRAVE_SEARCH_API_KEY
+    
+    # Google Search - 通过 SerpAPI
+    google:
+      enabled: true
+      country: cn
+      language: zh
+      # 需要 SERPAPI_KEY
+    
+    # Bing Search - 微软必应搜索
+    bing:
+      enabled: true
+      market: zh-CN
+      safe_search: moderate
+      # 需要 BING_SEARCH_KEY
+    
+    # Arxiv - 学术论文搜索
+    arxiv:
+      enabled: true
+      # 专为科学和学术论文设计
+      max_results: 10
+      sort_by: "relevance"  # relevance, lastUpdatedDate, submittedDate
+      sort_order: "descending"
+      # 无需 API 密钥
+  fallback_engines:
+  - duckduckgo
+  - brave
+  - google
+  - bing
+  - arxiv
+  max_results: 10
+  timeout: 30
+system:
+  browser:
+    headless: true
+    timeout: 30000
+    user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
+      like Gecko) Chrome/91.0.4472.124 Safari/537.36
+    viewport:
+      height: 1080
+      width: 1920
+  code_execution:
+    allowed_imports:
+    - pandas
+    - numpy
+    - matplotlib
+    - seaborn
+    - requests
+    - json
+    - csv
+    - datetime
+    - re
+    - math
+    - statistics
+    forbidden_operations:
+    - os.system
+    - subprocess
+    - eval
+    - exec
+    - __import__
+    max_output_length: 10000
+    timeout: 60
+  logging:
+    backup_count: 5
+    file: deepresearch.log
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level: INFO
+    max_file_size: 10MB
+  output_dir: output
+  performance:
+    cache_enabled: true
+    cache_ttl: 3600
+    max_concurrent_requests: 5
+    request_retry_count: 3
+    request_retry_delay: 1
+  research:
+    content_writing:
+      content_limits:
+        max_length: 2000
+        min_length: 300
+      quality_control:
+        fact_check: true
+        include_sources: true
+        use_templates: true
+      writing_style:
+        citation_style: inline
+        include_examples: true
+        include_statistics: true
+        target_audience: general
+        tone: academic
+    outline:
+      default_language: zh-CN
+      max_depth: 3
+      max_sections: 8
+      max_subsections_per_section: 5
+      research_depth: comprehensive
+    planning:
+      default_strategy: adaptive
+      enable_dynamic_replanning: true
+      fallback_enabled: true
+      max_parallel_tasks: 3
+      resource_optimization: true
+    task_splitting:
+      include_synthesis_tasks: true
+      include_verification_tasks: true
+      max_tasks_per_section: 5
+      max_tasks_per_subsection: 3
+      task_granularity: medium
+  security:
+    allowed_file_types:
+    - .txt
+    - .md
+    - .csv
+    - .json
+    - .pdf
+    - .docx
+    enable_sandbox: true
+    max_file_size: 50MB
+    rate_limiting:
+      requests_per_hour: 1000
+      requests_per_minute: 60
+  temp_dir: temp
+tools:
+  browser_tool:
+    enabled: true
+    max_pages_per_session: 10
+    screenshot_enabled: true
+  
+  # 新增 browser-use 工具配置
+  browser_use_tool:
+    enabled: true
+    llm_provider: deepseek  # 使用 DeepSeek 作为默认 LLM
+    llm_model: deepseek-chat  # 使用 deepseek-chat 模型，更适合对话交互
+    browser:
+      headless: true
+      timeout: 300
+      max_steps: 50
+      save_screenshots: true
+      extract_data: true
+    output_dir: browser_outputs
+    features:
+      search_and_extract: true
+      navigate_and_extract: true
+      fill_form: true
+      monitor_changes: true
+      automate_workflow: true
+      custom_task: true
+    security:
+      allowed_domains: []  # 空数组表示允许所有域名，可以限制特定域名
+      blocked_domains:
+        - malicious-site.com
+      max_execution_time: 600  # 最大执行时间（秒）
+      enable_content_filtering: true
+  
+  code_tool:
+    enabled: true
+    execution_environment: sandbox
+    memory_limit: 512MB
+  file_tool:
+    auto_encoding_detection: true
+    enabled: true
+    max_file_size: 10MB
+  search_tool:
+    enabled: true
+    max_results_per_query: 10
+    result_filtering: true
