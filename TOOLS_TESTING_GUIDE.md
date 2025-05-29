@@ -1,204 +1,126 @@
-# DeepResearch 工具测试指南
+# 🔬 DeepResearch 工具测试指南
 
-这个文档提供了所有工具和 Browser-Use 功能的详细测试命令和配置示例。
+本指南帮助您验证 DeepResearch 系统的所有工具和功能是否正常工作。
 
-## 📋 目录
+## 🚀 快速验证
 
-1. [快速验证所有工具](#快速验证所有工具)
-2. [搜索引擎测试](#搜索引擎测试)
-3. [Browser-Use 工具测试](#browser-use-工具测试)
-4. [其他工具测试](#其他工具测试)
-5. [完整研究流程测试](#完整研究流程测试)
-6. [故障排除](#故障排除)
+一键测试所有核心功能：
 
----
-
-## 🚀 快速验证所有工具
-
-### 1. 检查配置和 API 密钥
 ```bash
-# 检查系统配置
-python main.py config-check
+# 运行完整的功能测试
+python test_fixes.py
 
-# 预期输出：显示所有 API 密钥状态和工具配置
+# 检查配置状态
+./run.sh config-check
+
+# 运行演示
+./run.sh demo
 ```
 
-### 2. 验证所有工具注册
-```bash
-# 测试工具注册
-python -c "
-from tools.tool_registry import ToolRegistry
-registry = ToolRegistry()
-print('已注册的工具:')
-for name, tool in registry.tools.items():
-    print(f'  - {name}: {tool.__class__.__name__}')
-print(f'\\n总计: {len(registry.tools)} 个工具')
-"
-```
+## 🔍 详细工具测试
 
-### 3. 快速搜索引擎测试
-```bash
-# 测试搜索引擎管理器
-python -c "
-from tools.search_engines import SearchEngineManager
-manager = SearchEngineManager()
-print('可用搜索引擎:', list(manager.engines.keys()))
-results = manager.search('人工智能', max_results=2)
-print(f'搜索结果: {len(results)} 条')
-for i, result in enumerate(results[:2], 1):
-    print(f'{i}. {result.title[:50]}... (来源: {result.source})')
-"
-```
+### 1. 搜索引擎测试
 
----
+#### 测试所有搜索引擎
+```python
+# 创建搜索引擎测试脚本
+cat > test_search_engines.py << 'EOF'
+#!/usr/bin/env python3
+"""测试所有搜索引擎功能"""
 
-## 🔍 搜索引擎测试
-
-### Tavily Search (AI 优化搜索)
-```bash
-# 基础 Tavily 搜索测试
-python -c "
-from tools.search_engines import TavilySearch
+import sys
 import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-config = {
-    'api_key': os.getenv('TAVILY_API_KEY'),
-    'timeout': 30,
-    'max_results': 5,
-    'include_answer': True,
-    'include_raw_content': False
-}
+from tools.search_engines import SearchEngineManager
 
-if config['api_key']:
-    tavily = TavilySearch(config)
-    print('🔍 测试 Tavily 搜索...')
-    results = tavily.search('机器学习最新进展', max_results=3)
-    print(f'找到 {len(results)} 个结果:')
-    for i, result in enumerate(results, 1):
-        print(f'{i}. {result.title}')
-        print(f'   来源: {result.source}')
-        print(f'   URL: {result.url}')
-        print(f'   摘要: {result.snippet[:100]}...')
-        print()
-else:
-    print('❌ TAVILY_API_KEY 未配置')
-"
+def test_all_search_engines():
+    """测试所有可用的搜索引擎"""
+    print("🔍 测试搜索引擎...")
+    
+    manager = SearchEngineManager()
+    
+    # 显示可用的搜索引擎
+    available_engines = manager.get_available_engines()
+    print(f"可用搜索引擎: {available_engines}")
+    
+    test_query = "DeepSeek LLM"
+    
+    for engine in available_engines:
+        print(f"\n🔍 测试 {engine} 搜索引擎:")
+        try:
+            results = manager.search(test_query, engine=engine, max_results=3)
+            if results:
+                print(f"  ✅ 成功获取 {len(results)} 个结果")
+                for i, result in enumerate(results[:2], 1):
+                    print(f"  {i}. {result.title[:60]}... 来源: {result.source}")
+                    print(f"     URL: {result.url}")
+            else:
+                print(f"  ⚠️ 没有获取到结果")
+        except Exception as e:
+            print(f"  ❌ 搜索失败: {e}")
+    
+    # 测试引用来源修复
+    print(f"\n🎯 验证引用来源修复:")
+    print("确保显示的是域名而不是搜索引擎名称")
+
+if __name__ == "__main__":
+    test_all_search_engines()
+EOF
+
+# 运行搜索引擎测试
+python test_search_engines.py
 ```
 
-### DuckDuckGo Search (免费搜索)
-```bash
-# DuckDuckGo 搜索测试
-python -c "
-from tools.search_engines import DuckDuckGoSearch
+#### 测试特定搜索引擎
 
-config = {
-    'timeout': 30,
-    'max_results': 5,
-    'region': 'cn-zh',
-    'safe_search': 'moderate'
-}
+**Tavily 搜索测试**:
+```python
+from tools.search_engines import TavilySearch
 
-try:
-    ddg = DuckDuckGoSearch(config)
-    print('🔍 测试 DuckDuckGo 搜索...')
-    results = ddg.search('Python 编程教程', max_results=3)
-    print(f'找到 {len(results)} 个结果:')
-    for i, result in enumerate(results, 1):
-        print(f'{i}. {result.title[:60]}...')
-        print(f'   URL: {result.url}')
-        print()
-except Exception as e:
-    print(f'❌ DuckDuckGo 搜索失败: {e}')
-"
+# 测试 Tavily 搜索
+tavily = TavilySearch()
+results = tavily.search("人工智能发展趋势", max_results=5)
+print(f"Tavily 搜索结果: {len(results)} 个")
+for result in results[:2]:
+    print(f"标题: {result.title}")
+    print(f"来源: {result.source}")  # 应该显示域名，不是 "tavily"
 ```
 
-### ArXiv 学术搜索
-```bash
-# ArXiv 学术论文搜索测试
-python -c "
+**ArXiv 搜索测试**:
+```python
 from tools.search_engines import ArxivSearch
 
-config = {
-    'timeout': 30,
-    'max_results': 5,
-    'sort_by': 'relevance',
-    'sort_order': 'descending'
-}
-
-try:
-    arxiv = ArxivSearch(config)
-    print('🔍 测试 ArXiv 学术搜索...')
-    results = arxiv.search('machine learning', max_results=3)
-    print(f'找到 {len(results)} 个学术论文:')
-    for i, result in enumerate(results, 1):
-        print(f'{i}. {result.title}')
-        print(f'   ArXiv ID: {result.metadata.get(\"arxiv_id\", \"N/A\")}')
-        print(f'   作者: {result.metadata.get(\"authors\", [])}')
-        print(f'   分类: {result.metadata.get(\"categories\", [])}')
-        print(f'   发布时间: {result.metadata.get(\"published\", \"N/A\")}')
-        print()
-except Exception as e:
-    print(f'❌ ArXiv 搜索失败: {e}')
-"
+# 测试 ArXiv 搜索
+arxiv = ArxivSearch()
+results = arxiv.search("machine learning", max_results=3)
+print(f"ArXiv 搜索结果: {len(results)} 个")
+for result in results:
+    print(f"论文: {result.title}")
+    print(f"来源: {result.source}")  # 应该显示 "arxiv.org"
 ```
 
-### 多引擎对比搜索
-```bash
-# 对比多个搜索引擎的结果
-python -c "
-from tools.search_engines import SearchEngineManager
+**DuckDuckGo 搜索测试**:
+```python
+from tools.search_engines import DuckDuckGoSearch
 
-manager = SearchEngineManager()
-query = '区块链技术应用'
-
-print(f'🔍 搜索查询: {query}')
-print('=' * 50)
-
-results = manager.search_multiple_engines(
-    query=query,
-    engines=['tavily', 'duckduckgo', 'arxiv'],
-    max_results_per_engine=2
-)
-
-for engine, engine_results in results.items():
-    print(f'\n📊 {engine.upper()} 搜索结果 ({len(engine_results)} 条):')
-    for i, result in enumerate(engine_results, 1):
-        print(f'  {i}. {result.title[:60]}...')
-        print(f'     来源: {result.source}')
-"
+# 测试 DuckDuckGo 搜索
+ddg = DuckDuckGoSearch()
+results = ddg.search("量子计算", max_results=5)
+print(f"DuckDuckGo 搜索结果: {len(results)} 个")
+for result in results:
+    print(f"标题: {result.title}")
+    print(f"来源: {result.source}")  # 应该显示实际域名
 ```
 
----
+### 2. Browser-Use 工具测试
 
-## 🌐 Browser-Use 工具测试
-
-### 基础 Browser-Use 功能测试
-```bash
-# 测试 Browser-Use 工具初始化
-python -c "
-from tools.browser_use_tool import BrowserUseTool
-from config import config
-
-print('🌐 测试 Browser-Use 工具初始化...')
-
-try:
-    browser_tool = BrowserUseTool()
-    print('✅ Browser-Use 工具初始化成功')
-    print(f'LLM 提供商: {browser_tool.llm_provider}')
-    print(f'LLM 模型: {browser_tool.llm_model}')
-    print(f'浏览器配置: {browser_tool.browser_config}')
-    print(f'启用功能: {list(browser_tool.features.keys())}')
-except Exception as e:
-    print(f'❌ Browser-Use 工具初始化失败: {e}')
-"
-```
-
-### Browser-Use 搜索和提取测试
-```bash
-# 创建 Browser-Use 搜索测试脚本
-cat > test_browser_use_search.py << 'EOF'
+#### 基础功能测试
+```python
+# 创建 Browser-Use 测试脚本
+cat > test_browser_use.py << 'EOF'
 #!/usr/bin/env python3
-"""Browser-Use 搜索和提取功能测试"""
+"""测试 Browser-Use 工具功能"""
 
 import asyncio
 import sys
@@ -207,363 +129,549 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from tools.browser_use_tool import BrowserUseTool
 
-async def test_browser_search():
-    """测试浏览器搜索和数据提取"""
+async def test_browser_use():
+    """测试 Browser-Use 工具"""
+    print("🌐 测试 Browser-Use 工具...")
+    
     try:
+        # 初始化工具
         browser_tool = BrowserUseTool()
+        print("✅ Browser-Use 工具初始化成功")
         
         # 测试搜索和提取功能
-        print("🔍 测试浏览器搜索和提取...")
+        print("\n🔍 测试搜索和提取功能:")
+        result = browser_tool.execute(
+            action="search_and_extract",
+            query="人工智能最新发展",
+            search_engine="google",
+            timeout=30
+        )
         
-        task_config = {
-            "search_query": "Python 最新版本特性",
-            "target_websites": ["python.org", "docs.python.org"],
-            "extract_elements": ["h1", "h2", "p"],
-            "max_pages": 2,
-            "timeout": 60
-        }
-        
-        # 使用 search_and_extract 功能
-        result = await browser_tool.search_and_extract(task_config)
-        
-        if result["success"]:
-            print("✅ 搜索和提取成功")
-            print(f"📊 提取的数据条目: {len(result.get('extracted_data', []))}")
-            print(f"🌐 访问的页面: {len(result.get('visited_pages', []))}")
-            
-            # 显示部分提取的数据
-            for i, data in enumerate(result.get('extracted_data', [])[:3], 1):
-                print(f"\n📄 数据条目 {i}:")
-                print(f"   标题: {data.get('title', 'N/A')[:50]}...")
-                print(f"   URL: {data.get('url', 'N/A')}")
-                print(f"   内容: {data.get('content', 'N/A')[:100]}...")
+        if result.get('success'):
+            print("✅ 搜索和提取功能正常")
+            extracted_data = result.get('extracted_data', {})
+            print(f"提取的数据项: {len(extracted_data)}")
         else:
-            print(f"❌ 搜索和提取失败: {result.get('error', '未知错误')}")
+            print(f"❌ 搜索和提取功能失败: {result.get('error')}")
+        
+        # 测试网页导航和提取
+        print("\n🌐 测试网页导航和提取:")
+        result = browser_tool.execute(
+            action="navigate_and_extract",
+            url="https://example.com",
+            extraction_task="提取页面标题和主要内容",
+            timeout=20
+        )
+        
+        if result.get('success'):
+            print("✅ 网页导航和提取功能正常")
+        else:
+            print(f"❌ 网页导航失败: {result.get('error')}")
             
     except Exception as e:
-        print(f"💥 测试出错: {e}")
+        print(f"❌ Browser-Use 工具测试失败: {e}")
 
 if __name__ == "__main__":
-    asyncio.run(test_browser_search())
+    asyncio.run(test_browser_use())
 EOF
 
-# 运行 Browser-Use 搜索测试
-python test_browser_use_search.py
+# 运行 Browser-Use 测试
+python test_browser_use.py
 ```
 
-### Browser-Use 表单填写测试
-```bash
-# 创建表单填写测试脚本
-cat > test_browser_form.py << 'EOF'
-#!/usr/bin/env python3
-"""Browser-Use 表单填写功能测试"""
+#### 高级功能测试
+```python
+# 测试表单填写功能
+async def test_form_filling():
+    browser_tool = BrowserUseTool()
+    
+    result = browser_tool.execute(
+        action="fill_form",
+        url="https://httpbin.org/forms/post",
+        form_data={
+            "name": "Test User",
+            "email": "test@example.com",
+            "message": "This is a test message"
+        },
+        submit=False  # 不实际提交
+    )
+    
+    print(f"表单填写结果: {result}")
 
-import asyncio
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-from tools.browser_use_tool import BrowserUseTool
-
-async def test_browser_form():
-    """测试浏览器表单填写功能"""
-    try:
-        browser_tool = BrowserUseTool()
-        
-        print("📝 测试浏览器表单填写...")
-        
-        # 表单填写配置（以 Google 搜索为例）
-        form_config = {
-            "url": "https://www.google.com",
-            "form_data": {
-                "q": "人工智能研究进展"  # Google 搜索框
-            },
-            "submit_button_selector": "input[type='submit']",
-            "wait_for_results": True,
-            "extract_results": True
-        }
-        
-        result = await browser_tool.fill_form(form_config)
-        
-        if result["success"]:
-            print("✅ 表单填写成功")
-            print(f"🌐 最终页面 URL: {result.get('final_url', 'N/A')}")
-            print(f"📊 提取的结果数量: {len(result.get('form_results', []))}")
-        else:
-            print(f"❌ 表单填写失败: {result.get('error', '未知错误')}")
-            
-    except Exception as e:
-        print(f"💥 测试出错: {e}")
-
-if __name__ == "__main__":
-    asyncio.run(test_browser_form())
-EOF
-
-# 运行表单填写测试
-python test_browser_form.py
-```
-
-### Browser-Use 自定义任务测试
-```bash
-# 创建自定义任务测试脚本
-cat > test_browser_custom.py << 'EOF'
-#!/usr/bin/env python3
-"""Browser-Use 自定义任务功能测试"""
-
-import asyncio
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-from tools.browser_use_tool import BrowserUseTool
-
+# 测试自定义任务
 async def test_custom_task():
-    """测试自定义浏览器任务"""
-    try:
-        browser_tool = BrowserUseTool()
-        
-        print("🎯 测试自定义浏览器任务...")
-        
-        # 自定义任务：访问 GitHub 并提取 Python 项目信息
-        custom_task = {
-            "task_description": "访问 GitHub 搜索 Python 机器学习项目，提取前3个项目的名称、描述和星数",
-            "steps": [
-                {"action": "navigate", "url": "https://github.com"},
-                {"action": "search", "query": "python machine learning", "search_type": "repositories"},
-                {"action": "extract", "selector": ".repo-list-item", "limit": 3},
-                {"action": "get_details", "fields": ["name", "description", "stars"]}
-            ],
-            "timeout": 120,
-            "save_screenshots": True
-        }
-        
-        result = await browser_tool.execute_custom_task(custom_task)
-        
-        if result["success"]:
-            print("✅ 自定义任务执行成功")
-            print(f"📊 执行的步骤数: {len(result.get('executed_steps', []))}")
-            print(f"🖼️ 截图保存位置: {result.get('screenshots_path', 'N/A')}")
-            
-            # 显示提取的项目信息
-            extracted_data = result.get('extracted_data', [])
-            print(f"\n🐍 找到 {len(extracted_data)} 个 Python 项目:")
-            for i, project in enumerate(extracted_data[:3], 1):
-                print(f"  {i}. {project.get('name', 'N/A')}")
-                print(f"     描述: {project.get('description', 'N/A')[:80]}...")
-                print(f"     ⭐ Stars: {project.get('stars', 'N/A')}")
-        else:
-            print(f"❌ 自定义任务执行失败: {result.get('error', '未知错误')}")
-            
-    except Exception as e:
-        print(f"💥 测试出错: {e}")
-
-if __name__ == "__main__":
-    asyncio.run(test_custom_task())
-EOF
-
-# 运行自定义任务测试
-python test_browser_custom.py
+    browser_tool = BrowserUseTool()
+    
+    result = browser_tool.execute(
+        action="custom_task",
+        task_description="访问GitHub主页，提取主要导航菜单的链接",
+        url="https://github.com",
+        max_steps=10
+    )
+    
+    print(f"自定义任务结果: {result}")
 ```
 
----
+### 3. LLM 集成测试
 
-## 🔧 其他工具测试
+#### 测试所有 LLM 提供商
+```python
+# 创建 LLM 测试脚本
+cat > test_llms.py << 'EOF'
+#!/usr/bin/env python3
+"""测试所有 LLM 提供商"""
 
-### 代码执行工具测试
-```bash
-# 测试代码执行工具
-python -c "
-from tools.tool_registry import CodeTool
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-code_tool = CodeTool()
-print('💻 测试代码执行工具...')
+from config import config
+from llm.openai import OpenAIWrapper
+from llm.claude import ClaudeWrapper
+from llm.gemini import GeminiWrapper
+from llm.deepseek import DeepSeekWrapper
+from llm.ollama import OllamaWrapper
 
-# 测试 Python 代码执行
-python_code = '''
+def test_llm_provider(provider_name, wrapper_class):
+    """测试单个 LLM 提供商"""
+    print(f"\n🤖 测试 {provider_name}:")
+    
+    try:
+        llm_config = config.get_llm_config(provider_name)
+        if not llm_config.get('api_key') and provider_name != 'ollama':
+            print(f"  ⚠️ 没有配置 API 密钥，跳过测试")
+            return False
+        
+        llm = wrapper_class(llm_config)
+        
+        # 测试简单生成
+        response = llm.generate(
+            prompt="请用一句话介绍人工智能",
+            max_tokens=100
+        )
+        
+        if response.is_success:
+            print(f"  ✅ 生成成功: {response.content[:50]}...")
+            return True
+        else:
+            print(f"  ❌ 生成失败: {response.error}")
+            return False
+            
+    except Exception as e:
+        print(f"  ❌ 测试失败: {e}")
+        return False
+
+def test_all_llms():
+    """测试所有 LLM 提供商"""
+    print("🤖 测试 LLM 提供商...")
+    
+    providers = [
+        ("openai", OpenAIWrapper),
+        ("claude", ClaudeWrapper),
+        ("gemini", GeminiWrapper),
+        ("deepseek", DeepSeekWrapper),
+        ("ollama", OllamaWrapper),
+    ]
+    
+    results = {}
+    for provider_name, wrapper_class in providers:
+        results[provider_name] = test_llm_provider(provider_name, wrapper_class)
+    
+    # 显示测试结果
+    print(f"\n📊 LLM 测试结果:")
+    for provider, success in results.items():
+        status = "✅ 正常" if success else "❌ 失败"
+        print(f"  {provider}: {status}")
+    
+    working_providers = [p for p, s in results.items() if s]
+    print(f"\n🎯 可用的 LLM 提供商: {working_providers}")
+
+if __name__ == "__main__":
+    test_all_llms()
+EOF
+
+# 运行 LLM 测试
+python test_llms.py
+```
+
+#### 测试 DeepSeek 集成
+```python
+# 专门测试 DeepSeek LLM
+from llm.deepseek import DeepSeekWrapper
+from config import config
+
+def test_deepseek():
+    llm_config = config.get_llm_config("deepseek")
+    deepseek = DeepSeekWrapper(llm_config)
+    
+    response = deepseek.generate(
+        prompt="请介绍 DeepSeek 模型的特点",
+        max_tokens=200,
+        temperature=0.7
+    )
+    
+    print(f"DeepSeek 响应: {response.content}")
+    print(f"Token 使用: {response.token_usage}")
+```
+
+### 4. 其他工具测试
+
+#### 代码执行工具测试
+```python
+from tools.code_runner import CodeTool
+
+def test_code_execution():
+    """测试代码执行工具"""
+    print("💻 测试代码执行工具...")
+    
+    code_tool = CodeTool()
+    
+    # 测试 Python 代码执行
+    test_code = """
 import pandas as pd
 import numpy as np
 
-# 创建示例数据
-data = {
-    'name': ['Alice', 'Bob', 'Charlie'],
-    'age': [25, 30, 35],
-    'score': [95, 87, 92]
-}
-
+# 创建测试数据
+data = {'A': [1, 2, 3], 'B': [4, 5, 6]}
 df = pd.DataFrame(data)
-print("数据框信息:")
-print(df.info())
-print("\n数据预览:")
+print(f"数据形状: {df.shape}")
 print(df.head())
-print(f"\n平均分数: {df['score'].mean():.2f}")
-'''
-
-try:
-    result = code_tool._run(python_code)
-    print('✅ 代码执行成功:')
-    print(result)
-except Exception as e:
-    print(f'❌ 代码执行失败: {e}')
-"
+    """
+    
+    result = code_tool.execute(test_code)
+    print(f"代码执行结果: {result}")
 ```
 
-### 文件处理工具测试
-```bash
-# 测试文件处理工具
-python -c "
-from tools.tool_registry import FileTool
-import tempfile
-import os
+#### 文件处理工具测试
+```python
+from tools.file_reader import FileTool
 
-file_tool = FileTool()
-print('📁 测试文件处理工具...')
-
-# 创建临时文件
-with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
-    f.write('这是一个测试文件\n包含多行文本\n用于测试文件读取功能')
-    temp_file = f.name
-
-try:
+def test_file_operations():
+    """测试文件操作工具"""
+    print("📁 测试文件操作工具...")
+    
+    file_tool = FileTool()
+    
     # 测试文件读取
-    result = file_tool._run(f'read:{temp_file}')
-    print('✅ 文件读取成功:')
-    print(result[:200] + '...' if len(result) > 200 else result)
-finally:
-    # 清理临时文件
-    os.unlink(temp_file)
-"
+    test_content = "这是一个测试文件内容\n包含多行文本\n用于测试文件读取功能"
+    
+    # 写入测试文件
+    file_tool.write_file("test_file.txt", test_content)
+    
+    # 读取测试文件
+    content = file_tool.read_file("test_file.txt")
+    print(f"文件内容: {content}")
+    
+    # 清理测试文件
+    import os
+    if os.path.exists("test_file.txt"):
+        os.remove("test_file.txt")
+        print("✅ 测试文件已清理")
 ```
-
----
 
 ## 🧪 完整研究流程测试
 
-### 简单研究流程测试
-```bash
-# 快速研究流程测试（非交互模式）
-python main.py research "人工智能在教育领域的应用" \
-    --provider deepseek \
-    --max-sections 2 \
-    --language zh-CN \
-    --output-dir output \
-    --no-interactive
-```
+### 端到端测试
+```python
+# 创建完整流程测试脚本
+cat > test_full_workflow.py << 'EOF'
+#!/usr/bin/env python3
+"""测试完整研究工作流"""
 
-### 完整研究流程测试
-```bash
-# 完整研究流程测试（交互模式）
-python main.py research "区块链技术的发展趋势" \
-    --provider deepseek \
-    --max-sections 4 \
-    --language zh-CN \
-    --enable-browser-use
-```
-
-### 使用特定搜索引擎的研究
-```bash
-# 使用 Tavily 搜索引擎进行研究
-python -c "
 import asyncio
-from workflow.graph import ResearchWorkflow
-from tools.search_engines import SearchEngineManager
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-async def test_research_with_tavily():
+from workflow.graph import ResearchWorkflow
+
+async def test_research_workflow():
+    """测试完整研究工作流"""
+    print("🔬 测试完整研究工作流...")
+    
+    # 创建研究工作流
     workflow = ResearchWorkflow(
-        llm_provider='deepseek',
-        max_sections=2,
-        interactive_mode=False
+        llm_provider="deepseek",  # 使用 DeepSeek
+        max_sections=3,          # 限制章节数量
+        interactive_mode=False   # 非交互模式
     )
     
-    # 强制使用 Tavily 搜索
-    original_search = workflow.search_manager.search
-    def force_tavily_search(query, **kwargs):
-        return workflow.search_manager.search(query, engine='tavily', **kwargs)
-    workflow.search_manager.search = force_tavily_search
+    test_topic = "人工智能在教育领域的应用"
     
-    print('🔍 使用 Tavily 搜索引擎进行研究...')
-    outline, content_map = await workflow.run_full_workflow('量子计算基础原理')
+    print(f"📝 研究主题: {test_topic}")
     
-    if outline and content_map:
-        print(f'✅ 研究完成，生成 {len(content_map)} 个内容部分')
+    try:
+        # 运行完整工作流
+        outline, content_map = await workflow.run_full_workflow(test_topic)
         
-        # 检查引用来源
-        sources_count = sum(1 for content in content_map.values() if content.sources)
-        print(f'📚 包含引用来源的部分: {sources_count}/{len(content_map)}')
-    else:
-        print('❌ 研究失败')
+        if outline and content_map:
+            print("✅ 研究工作流完成")
+            print(f"📋 生成大纲: {outline.title}")
+            print(f"📊 章节数量: {len(outline.sections)}")
+            print(f"📝 内容部分: {len(content_map)}")
+            
+            # 检查引用来源
+            total_sources = 0
+            for section_key, content in content_map.items():
+                sources = content.sources
+                total_sources += len(sources)
+                print(f"  {section_key}: {len(sources)} 个引用来源")
+                
+                # 显示前几个引用来源
+                for source in sources[:2]:
+                    print(f"    - {source}")
+            
+            print(f"📚 总引用来源: {total_sources} 个")
+            
+            # 验证引用来源格式
+            print(f"\n🎯 验证引用来源格式:")
+            if total_sources > 0:
+                print("✅ 引用来源已包含在内容中")
+            else:
+                print("⚠️ 没有找到引用来源")
+                
+            return True
+        else:
+            print("❌ 研究工作流失败")
+            return False
+            
+    except Exception as e:
+        print(f"❌ 研究工作流异常: {e}")
+        return False
 
-asyncio.run(test_research_with_tavily())
-"
+if __name__ == "__main__":
+    success = asyncio.run(test_research_workflow())
+    if success:
+        print("\n🎉 完整研究流程测试通过！")
+    else:
+        print("\n⚠️ 研究流程测试失败，请检查配置")
+EOF
+
+# 运行完整流程测试
+python test_full_workflow.py
 ```
 
----
-
-## 🚨 故障排除
-
-### 常见问题诊断
+### 交互式测试
 ```bash
-# 创建诊断脚本
+# 运行交互式研究测试
+./run.sh interactive "机器学习算法比较" --provider deepseek
+
+# 测试自动化模式
+./run.sh auto "区块链技术发展" --provider claude --max-sections 4
+```
+
+## 🎨 LangGraph Studio 测试
+
+### 安装和配置测试
+```bash
+# 1. 验证 LangGraph Studio 配置文件
+cat langgraph.json
+
+# 2. 检查依赖项
+pip list | grep -E "(langgraph|langchain)"
+
+# 3. 验证环境变量
+echo $LANGCHAIN_TRACING_V2
+echo $LANGCHAIN_API_KEY
+```
+
+### Studio 工作流测试
+```python
+# 运行 Studio 快速开始演示
+python examples/studio_quickstart.py
+
+# 测试 Studio 集成
+cat > test_studio_integration.py << 'EOF'
+#!/usr/bin/env python3
+"""测试 LangGraph Studio 集成"""
+
+import asyncio
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from examples.studio_quickstart import StudioQuickstartWorkflow
+
+async def test_studio_workflow():
+    """测试 Studio 工作流"""
+    print("🎨 测试 LangGraph Studio 工作流...")
+    
+    try:
+        # 创建演示工作流
+        workflow = StudioQuickstartWorkflow()
+        
+        # 初始状态
+        initial_state = {
+            "topic": "LangGraph Studio 测试",
+            "stage": "init",
+            "findings": "",
+            "debug_info": {}
+        }
+        
+        # 配置
+        config = {"configurable": {"thread_id": "studio-test-001"}}
+        
+        print("⚡ 执行 Studio 演示工作流...")
+        
+        # 执行工作流
+        result = await workflow.graph.ainvoke(initial_state, config=config)
+        
+        if result and result.get("stage") == "complete":
+            print("✅ Studio 工作流测试成功")
+            print(f"📊 最终状态: {result['stage']}")
+            print(f"🔍 调试信息: {result.get('debug_info', {})}")
+            return True
+        else:
+            print("❌ Studio 工作流测试失败")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Studio 工作流测试异常: {e}")
+        return False
+
+if __name__ == "__main__":
+    success = asyncio.run(test_studio_workflow())
+    if success:
+        print("\n🎉 LangGraph Studio 集成测试通过！")
+        print("💡 现在可以在 LangGraph Studio 中打开项目目录进行可视化调试")
+    else:
+        print("\n⚠️ Studio 集成测试失败")
+EOF
+
+# 运行 Studio 集成测试
+python test_studio_integration.py
+```
+
+### Studio 可视化验证
+```bash
+# 创建 Studio 验证指南
+cat > verify_studio.md << 'EOF'
+# LangGraph Studio 可视化验证
+
+## 步骤 1: 打开 LangGraph Studio
+1. 启动 LangGraph Studio 应用
+2. 登录 LangSmith 账户
+3. 选择 "Open Directory"
+4. 选择 DeepResearch 项目目录
+
+## 步骤 2: 验证工作流可视化
+- [ ] 图形界面显示工作流节点
+- [ ] 节点之间的连接正确显示
+- [ ] 可以看到以下节点:
+  - [ ] initialize
+  - [ ] search_topic  
+  - [ ] analyze_results
+  - [ ] generate_summary
+
+## 步骤 3: 测试交互功能
+- [ ] 在输入框中输入测试主题
+- [ ] 点击运行按钮启动工作流
+- [ ] 观察节点执行状态变化
+- [ ] 查看实时状态更新
+
+## 步骤 4: 调试功能验证
+- [ ] 设置断点并暂停执行
+- [ ] 检查状态面板中的数据
+- [ ] 手动修改状态值
+- [ ] 继续执行验证修改效果
+
+## 步骤 5: 监控面板验证
+- [ ] 查看执行日志
+- [ ] 检查性能指标
+- [ ] 验证错误处理
+EOF
+
+echo "📖 Studio 验证指南已创建: verify_studio.md"
+```
+
+## 🚨 故障排除和诊断
+
+### 自动诊断脚本
+```python
+# 创建综合诊断脚本
 cat > diagnose_tools.py << 'EOF'
 #!/usr/bin/env python3
-"""工具诊断脚本"""
+"""DeepResearch 工具诊断脚本"""
 
-import os
 import sys
+import os
+import importlib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 def diagnose_environment():
     """诊断环境配置"""
-    print("🔍 诊断系统环境...")
+    print("🔧 诊断环境配置...")
     
-    # 检查 Python 版本
-    print(f"Python 版本: {sys.version}")
-    
-    # 检查关键依赖包
-    required_packages = [
-        'requests', 'pydantic', 'langchain', 'langgraph', 
-        'duckduckgo_search', 'feedparser', 'browser_use'
-    ]
-    
-    missing_packages = []
-    for package in required_packages:
-        try:
-            __import__(package)
-            print(f"✅ {package}: 已安装")
-        except ImportError:
-            print(f"❌ {package}: 未安装")
-            missing_packages.append(package)
-    
-    if missing_packages:
-        print(f"\n📦 需要安装的包: {', '.join(missing_packages)}")
-        print(f"安装命令: pip install {' '.join(missing_packages)}")
-    
-    return len(missing_packages) == 0
+    try:
+        # 检查 Python 版本
+        python_version = sys.version_info
+        print(f"Python 版本: {python_version.major}.{python_version.minor}")
+        
+        if python_version.major >= 3 and python_version.minor >= 11:
+            print("✅ Python 版本满足要求")
+        else:
+            print("⚠️ Python 版本建议 3.11+")
+        
+        # 检查关键依赖包
+        required_packages = [
+            'langchain', 'langgraph', 'openai', 'anthropic', 
+            'google-generativeai', 'tavily-python', 'duckduckgo-search',
+            'browser-use', 'playwright'
+        ]
+        
+        missing_packages = []
+        for package in required_packages:
+            try:
+                importlib.import_module(package.replace('-', '_'))
+                print(f"✅ {package} 已安装")
+            except ImportError:
+                missing_packages.append(package)
+                print(f"❌ {package} 未安装")
+        
+        if not missing_packages:
+            print("✅ 所有依赖包已安装")
+            return True
+        else:
+            print(f"⚠️ 缺少依赖包: {missing_packages}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ 环境诊断失败: {e}")
+        return False
 
 def diagnose_api_keys():
     """诊断 API 密钥配置"""
-    print("\n🔑 诊断 API 密钥...")
+    print("\n🔑 诊断 API 密钥配置...")
     
-    api_keys = {
-        'TAVILY_API_KEY': 'Tavily 搜索',
-        'BRAVE_SEARCH_API_KEY': 'Brave 搜索',
-        'SERPAPI_KEY': 'Google 搜索',
-        'BING_SEARCH_KEY': 'Bing 搜索',
-        'OPENAI_API_KEY': 'OpenAI',
-        'ANTHROPIC_API_KEY': 'Claude',
-        'GOOGLE_API_KEY': 'Gemini',
-        'DEEPSEEK_API_KEY': 'DeepSeek'
-    }
-    
-    configured_keys = 0
-    for key, name in api_keys.items():
-        if os.getenv(key):
-            print(f"✅ {name}: 已配置")
-            configured_keys += 1
+    try:
+        from config import config
+        
+        api_keys = {
+            'OPENAI_API_KEY': config.llm.openai.api_key,
+            'ANTHROPIC_API_KEY': config.llm.claude.api_key,
+            'GOOGLE_API_KEY': config.llm.gemini.api_key,
+            'DEEPSEEK_API_KEY': config.llm.deepseek.api_key,
+            'TAVILY_API_KEY': config.search.tavily.api_key,
+        }
+        
+        configured_keys = 0
+        for key_name, key_value in api_keys.items():
+            if key_value and key_value.strip():
+                print(f"✅ {key_name} 已配置")
+                configured_keys += 1
+            else:
+                print(f"⚠️ {key_name} 未配置")
+        
+        if configured_keys >= 2:  # 至少需要一个 LLM 和一个搜索 API
+            print(f"✅ API 密钥配置充足 ({configured_keys} 个)")
+            return True
         else:
-            print(f"❌ {name}: 未配置")
-    
-    print(f"\n📊 已配置 {configured_keys}/{len(api_keys)} 个 API 密钥")
-    return configured_keys > 0
+            print(f"⚠️ 建议配置更多 API 密钥 (当前: {configured_keys} 个)")
+            return False
+            
+    except Exception as e:
+        print(f"❌ API 密钥诊断失败: {e}")
+        return False
 
 def diagnose_search_engines():
     """诊断搜索引擎"""
@@ -571,10 +679,11 @@ def diagnose_search_engines():
     
     try:
         from tools.search_engines import SearchEngineManager
-        manager = SearchEngineManager()
         
+        manager = SearchEngineManager()
         available_engines = manager.get_available_engines()
-        print(f"可用搜索引擎: {', '.join(available_engines)}")
+        
+        print(f"可用搜索引擎: {available_engines}")
         
         if available_engines:
             # 测试第一个可用的搜索引擎
@@ -608,6 +717,39 @@ def diagnose_browser_use():
         print(f"❌ Browser-Use 工具初始化失败: {e}")
         return False
 
+def diagnose_studio_integration():
+    """诊断 LangGraph Studio 集成"""
+    print("\n🎨 诊断 LangGraph Studio 集成...")
+    
+    try:
+        # 检查 langgraph.json 配置文件
+        if os.path.exists("langgraph.json"):
+            print("✅ langgraph.json 配置文件存在")
+        else:
+            print("❌ langgraph.json 配置文件不存在")
+            return False
+        
+        # 检查 LangSmith 环境变量
+        langchain_api_key = os.getenv("LANGCHAIN_API_KEY")
+        if langchain_api_key:
+            print("✅ LANGCHAIN_API_KEY 已配置")
+        else:
+            print("⚠️ LANGCHAIN_API_KEY 未配置")
+        
+        # 检查 Studio 示例文件
+        if os.path.exists("examples/studio_quickstart.py"):
+            print("✅ Studio 快速开始示例存在")
+        else:
+            print("❌ Studio 快速开始示例不存在")
+            return False
+        
+        print("✅ LangGraph Studio 集成配置正常")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Studio 集成诊断失败: {e}")
+        return False
+
 if __name__ == "__main__":
     print("🏥 DeepResearch 工具诊断")
     print("=" * 50)
@@ -616,7 +758,8 @@ if __name__ == "__main__":
         diagnose_environment(),
         diagnose_api_keys(),
         diagnose_search_engines(),
-        diagnose_browser_use()
+        diagnose_browser_use(),
+        diagnose_studio_integration()
     ]
     
     passed = sum(checks)
@@ -626,6 +769,7 @@ if __name__ == "__main__":
     
     if passed == total:
         print("🎉 所有工具正常，可以开始使用！")
+        print("💡 现在可以在 LangGraph Studio 中可视化调试工作流")
     else:
         print("⚠️ 部分工具存在问题，请检查上述错误信息")
 EOF
@@ -664,6 +808,11 @@ python test_sources_fix.py
   - [ ] 搜索和提取功能正常
   - [ ] 表单填写功能正常
   - [ ] 自定义任务执行正常
+- [ ] **LangGraph Studio**:
+  - [ ] 配置文件正确创建
+  - [ ] LangSmith 连接正常
+  - [ ] 工作流可视化显示
+  - [ ] 交互式调试功能
 - [ ] **其他工具**:
   - [ ] 代码执行工具正常
   - [ ] 文件处理工具正常
@@ -771,11 +920,22 @@ python benchmark_tools.py
 3. **检查配置文件**: `config.yml` 和 `.env`
 4. **验证 API 密钥**: `python main.py config-check`
 5. **查看详细错误**: 使用 `--debug` 参数
+6. **Studio 相关问题**: 查看 `docs/langgraph-studio-customization.md`
 
 ---
 
 ## 🎉 恭喜！
 
-如果所有测试都通过，您的 DeepResearch 系统已经完全配置好，可以开始进行高质量的自动化研究了！
+如果所有测试都通过，您的 DeepResearch 系统已经完全配置好，包括：
 
-记得定期更新依赖包并检查 API 密钥的有效性。 
+✅ **核心功能**: 搜索、LLM、工具集成  
+✅ **高级功能**: Browser-Use 智能浏览器自动化  
+✅ **可视化调试**: LangGraph Studio 集成  
+✅ **引用来源**: 正确显示实际域名  
+
+现在您可以：
+- 进行高质量的自动化研究
+- 在 LangGraph Studio 中可视化调试工作流
+- 创建自定义研究模板和工作流
+
+记得定期更新依赖包并检查 API 密钥的有效性。🚀 

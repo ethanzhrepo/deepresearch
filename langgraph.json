@@ -1,0 +1,45 @@
+{
+  "dependencies": [
+    "langchain-openai",
+    "langchain-anthropic", 
+    "langchain-google-genai",
+    "langchain-community",
+    "langgraph",
+    "tavily-python",
+    "duckduckgo-search",
+    "arxiv",
+    "playwright",
+    "browser-use",
+    "typer",
+    "rich",
+    "pydantic",
+    "python-dotenv",
+    "asyncio",
+    "aiohttp"
+  ],
+  "graphs": {
+    "studio_research_workflow": {
+      "file": "workflow/studio_workflow.py",
+      "variable": "graph",
+      "description": "DeepResearch Studio 优化的研究工作流",
+      "checkpointer": "memory"
+    },
+    "research_workflow": {
+      "file": "workflow/graph.py",
+      "class": "ResearchWorkflow",
+      "description": "DeepResearch 传统研究工作流（兼容性）"
+    }
+  },
+  "env": ".env",
+  "python_version": "3.11",
+  "studio_config": {
+    "title": "DeepResearch Studio",
+    "description": "AI驱动的自动化深度研究系统",
+    "version": "1.0.0",
+    "debug_mode": true,
+    "auto_save": true,
+    "show_state_inspector": true,
+    "enable_time_travel": true,
+    "default_graph": "studio_research_workflow"
+  }
+} 

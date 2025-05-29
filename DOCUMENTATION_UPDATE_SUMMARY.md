@@ -42,6 +42,17 @@
 - 🛠️ 更新工具配置和使用示例
 - 📈 添加搜索策略和性能优化
 
+#### 5. docs/langgraph-studio-customization.md ✅ **新增**
+**内容包括：**
+- 🎨 LangGraph Studio 完整安装和配置指南
+- 🏗️ 工作流可视化和自定义节点开发
+- 🎮 交互式调试和断点调试技术
+- 📊 状态管理和实时监控系统
+- 🚀 性能优化和错误处理最佳实践
+- 🔄 自定义研究模板和插件系统
+- 🧪 自动化测试和集成外部工具
+- 📚 进阶教程和最佳实践指南
+
 ### 📋 新增文档
 
 #### 1. docs/release-status.md ✅ 新建
@@ -71,6 +82,17 @@
 - 🛠️ 其他工具测试
 - 🧪 完整研究流程测试
 - 🚨 故障排除和诊断
+
+#### 4. docs/langgraph-studio-customization.md ✅ **新建**
+**包含内容：**
+- 🛠️ LangGraph Studio 安装和系统要求
+- 🏗️ 工作流可视化和自定义开发
+- 🎮 交互式调试和状态管理
+- 📊 自定义仪表板和监控系统
+- 🚀 性能优化和错误处理
+- 🔄 模板系统和插件开发
+- 🧪 测试框架和集成工具
+- 📚 最佳实践和进阶教程
 
 ## 🔧 技术修复验证
 
@@ -115,16 +137,17 @@
 | 文档类型 | 数量 | 状态 |
 |----------|------|------|
 | 主要文档 | 1 | ✅ 已更新 |
-| 功能文档 | 3 | ✅ 已更新 |
-| 新增文档 | 2 | ✅ 已创建 |
+| 功能文档 | 4 | ✅ 已更新 |
+| 新增文档 | 3 | ✅ 已创建 |
 | 技术文档 | 1 | ✅ 已存在 |
-| **总计** | **7** | **✅ 完成** |
+| **总计** | **9** | **✅ 完成** |
 
 ### 📈 更新范围
 - **README.md** - 100% 重写主要部分
 - **features-overview.md** - 新增 40% 内容
 - **api-keys.md** - 新增 30% 内容
 - **tools.md** - 新增 50% 内容
+- **langgraph-studio-customization.md** - 100% 新建 ⭐ **新增**
 - **release-status.md** - 100% 新建
 - **changelog.md** - 新增 80% 内容
 
@@ -134,6 +157,7 @@
 - [x] 所有核心功能文档化
 - [x] API 配置指南完整
 - [x] 工具使用文档详细
+- [x] LangGraph Studio 自定义指南完整 ⭐ **新增**
 - [x] 测试指南可执行
 - [x] 发布信息准确
 - [x] 变更日志完整
@@ -143,8 +167,8 @@
 ### 🚀 系统状态
 - **代码状态**: ✅ 生产就绪
 - **文档状态**: ✅ 完整更新
-- [x] 测试状态: ✅ 全面验证
-- [x] 发布状态: ✅ 准备就绪
+- **测试状态**: ✅ 全面验证
+- **发布状态**: ✅ 准备就绪
 
 ## 🔗 文档导航
 
@@ -153,6 +177,9 @@
 - [docs/features-overview.md](docs/features-overview.md) - 功能特性概览
 - [docs/api-keys.md](docs/api-keys.md) - API 密钥配置指南
 - [docs/tools.md](docs/tools.md) - 工具系统详细文档
+
+### 🎨 高级使用文档
+- [docs/langgraph-studio-customization.md](docs/langgraph-studio-customization.md) - LangGraph Studio 自定义指南 ⭐ **新增**
 
 ### 🧪 技术文档
 - [TOOLS_TESTING_GUIDE.md](TOOLS_TESTING_GUIDE.md) - 工具测试指南
@@ -173,6 +200,7 @@
 3. **Browser-Use** - ✅ AI 浏览器自动化，完全集成
 4. **多搜索引擎** - ✅ 8个搜索引擎，完全支持
 5. **引用来源** - ✅ 显示域名，修复完成
+6. **LangGraph Studio** - ✅ 完整自定义指南，新增文档 ⭐ **新功能**
 
 ### 🚀 发布宣言
 
@@ -183,6 +211,7 @@
 - 🔍 8个搜索引擎集成
 - 🌐 AI驱动的浏览器自动化
 - 📊 完整的研究工作流
+- 🎨 LangGraph Studio 可视化开发 ⭐ **新增**
 - 📚 全面的文档体系
 - 🧪 完善的测试指南
 
@@ -192,6 +221,14 @@ git clone <repository-url>
 cd deepresearch
 ./setup.sh
 ./run.sh demo
+```
+
+**使用 LangGraph Studio：**
+```bash
+# 下载 LangGraph Studio（macOS）
+# 配置 langgraph.json
+# 在 Studio 中打开项目目录
+# 可视化调试研究工作流
 ```
 
 ---
