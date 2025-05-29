@@ -9,7 +9,8 @@ DeepResearch 是一个功能强大的自动化深度研究系统，集成了多�
 ## ✨ 核心特性
 
 - 🤖 **多LLM支持**: OpenAI GPT、Anthropic Claude、Google Gemini、DeepSeek、Ollama
-- 🔍 **智能搜索**: DuckDuckGo、Google (SerpAPI)、Bing 搜索集成
+- 🔍 **智能搜索**: Tavily、DuckDuckGo、ArXiv、Google、Bing、Brave 等多引擎集成
+- 🌐 **Browser-Use**: AI 驱动的智能浏览器自动化
 - 📊 **自动化工作流**: 基于 LangGraph 的智能研究流程
 - 📝 **结构化输出**: 自动生成 Markdown 格式的研究报告
 - 🛠️ **工具集成**: 代码执行、文件读取、浏览器自动化
@@ -39,8 +40,10 @@ GOOGLE_API_KEY=your_gemini_api_key_here
 DEEPSEEK_API_KEY=your_deepseek_api_key_here
 
 # 搜索引擎 (可选，提升搜索质量)
+TAVILY_API_KEY=your_tavily_api_key_here
 SERPAPI_KEY=your_serpapi_key_here
 BING_SEARCH_KEY=your_bing_search_key_here
+BRAVE_SEARCH_API_KEY=your_brave_search_key_here
 ```
 
 ### 3. 验证安装
@@ -63,6 +66,9 @@ BING_SEARCH_KEY=your_bing_search_key_here
 python main.py research "人工智能发展趋势" --provider claude
 python main.py research "区块链技术应用" --provider gemini
 python main.py research "量子计算前景" --provider deepseek
+
+# 启用 Browser-Use 工具
+python main.py research "最新技术趋势" --enable-browser-use
 
 # 自定义输出目录
 python main.py research "机器学习算法" --output ./my_reports
@@ -91,11 +97,13 @@ DeepResearch/
 ├── config/              # 配置管理
 │   └── config.py           # 系统配置
 ├── llm/                 # LLM 包装器
-│   ├── openai_wrapper.py   # OpenAI 集成
-│   ├── claude_wrapper.py   # Claude 集成
-│   └── gemini_wrapper.py   # Gemini 集成
+│   ├── openai.py           # OpenAI 集成
+│   ├── claude.py           # Claude 集成
+│   ├── gemini.py           # Gemini 集成
+│   └── deepseek.py         # DeepSeek 集成
 ├── tools/               # 工具集成
 │   ├── search_engines.py   # 搜索引擎
+│   ├── browser_use_tool.py # Browser-Use 集成
 │   ├── code_runner.py      # 代码执行
 │   └── file_reader.py      # 文件读取
 ├── utils/               # 实用工具
@@ -113,7 +121,8 @@ DeepResearch/
 - **核心框架**: Python 3.11+
 - **LLM集成**: LangChain、LangGraph
 - **用户界面**: Typer、Rich
-- **搜索引擎**: DuckDuckGo Search、SerpAPI
+- **搜索引擎**: Tavily、DuckDuckGo Search、SerpAPI、ArXiv
+- **浏览器自动化**: Browser-Use、Playwright
 - **配置管理**: Pydantic、python-dotenv
 - **文档生成**: Markdown
 - **环境管理**: Conda
@@ -121,18 +130,26 @@ DeepResearch/
 ## 📊 功能特性
 
 ### LLM 支持
-- ✅ OpenAI GPT (gpt-3.5-turbo, gpt-4, gpt-4-turbo)
-- ✅ Anthropic Claude (claude-3-sonnet, claude-3-opus)
-- ✅ Google Gemini (gemini-pro, gemini-pro-vision)
+- ✅ OpenAI GPT (gpt-4, gpt-4-turbo, gpt-3.5-turbo)
+- ✅ Anthropic Claude (claude-3.5-sonnet, claude-3-opus, claude-3-haiku)
+- ✅ Google Gemini (gemini-1.5-pro, gemini-1.0-pro)
+- ✅ DeepSeek (deepseek-chat) ⭐ **新增**
 - ✅ Ollama 本地模型 (llama2, mistral 等)
 
 ### 搜索引擎
+- ✅ Tavily Search (AI 优化的专业搜索) ⭐ **新增**
 - ✅ DuckDuckGo (免费，无需 API)
+- ✅ ArXiv (学术论文搜索) ⭐ **新增**
 - ✅ Google Search (需要 SerpAPI 密钥)
 - ✅ Bing Search (需要 Azure API 密钥)
+- ✅ Brave Search (需要 Brave API 密钥) ⭐ **新增**
+- ✅ Google Docs 搜索 ⭐ **新增**
+- ✅ Authority Sites 搜索 ⭐ **新增**
 
 ### 工具集成
 - ✅ Python 代码执行
+- ✅ Browser-Use 智能浏览器自动化 ⭐ **新增**
+- ✅ 传统浏览器工具（截图、抓取）
 - ✅ 文件读取和写入
 - ✅ 网页内容抓取
 - ✅ 数据可视化生成
@@ -152,9 +169,15 @@ DeepResearch/
 
 ### 自动化研究
 ```bash
-./run.sh auto "量子计算发展现状" --provider openai --max-sections 5
+./run.sh auto "量子计算发展现状" --provider deepseek --max-sections 5
 ```
 系统将自动执行完整的研究流程并生成报告。
+
+### 使用 Browser-Use 工具
+```bash
+python main.py research "最新AI技术趋势" --enable-browser-use --provider deepseek
+```
+使用 AI 驱动的浏览器自动化进行深度网页内容抓取。
 
 ### 配置管理
 ```bash
@@ -171,7 +194,7 @@ DeepResearch/
 ## 📁 输出文件
 
 研究完成后，系统将生成以下文件：
-- `output/研究报告.md` - 主研究报告
+- `output/研究报告.md` - 主研究报告（包含引用来源）
 - `output/outline.json` - 结构化大纲
 - `logs/research.log` - 详细日志
 - `demo_output/` - 演示文件 (如果运行演示)
@@ -201,8 +224,21 @@ DeepResearch/
    ./setup.sh
    ```
 
+### 测试功能
+```bash
+# 测试所有工具
+python -c "from tools.search_engines import SearchEngineManager; manager = SearchEngineManager(); print('可用搜索引擎:', list(manager.engines.keys()))"
+
+# 测试 Browser-Use
+python -c "from tools.browser_use_tool import BrowserUseTool; tool = BrowserUseTool(); print('Browser-Use 工具已就绪')"
+
+# 测试搜索结果源显示
+python -c "from tools.search_engines import SearchEngineManager; manager = SearchEngineManager(); results = manager.search('test', max_results=1); print('来源显示:', results[0].source if results else 'No results')"
+```
+
 ### 获取帮助
 - 查看安装状态: [INSTALLATION_STATUS.md](./INSTALLATION_STATUS.md)
+- 查看工具测试指南: [TOOLS_TESTING_GUIDE.md](./TOOLS_TESTING_GUIDE.md)
 - 检查配置: `./run.sh config-check`
 - 查看日志: `cat logs/deepresearch.log`
 

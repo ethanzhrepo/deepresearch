@@ -2,7 +2,7 @@
 
 ## 🛠️ 工具概览
 
-DeepResearch 拥有强大的工具系统，支持代码执行、网页浏览、文件操作、数据分析等多种功能。
+DeepResearch 拥有强大的工具系统，支持代码执行、网页浏览、文件操作、数据分析、智能浏览器自动化等多种功能。
 
 ## 🔧 核心工具
 
@@ -47,9 +47,77 @@ plt.grid(True)
 plt.show()
 ```
 
-### 2. 浏览器工具 (BrowserTool)
+### 2. Browser-Use 工具 ⭐ **全新功能**
 
-**功能：** 自动化网页浏览、数据抓取、截图等
+**功能：** AI 驱动的智能浏览器自动化，支持复杂的网页操作任务
+
+**配置：**
+```yaml
+tools:
+  browser_use_tool:
+    enabled: true
+    llm_provider: "deepseek"  # openai, claude, gemini, deepseek
+    llm_model: "deepseek-chat"
+    browser:
+      headless: true
+      timeout: 300
+      max_steps: 50
+    features:
+      search_and_extract: true
+      form_filling: true
+      custom_tasks: true
+      screenshots: true
+```
+
+**核心功能：**
+
+#### 搜索和提取
+```python
+# 搜索和内容提取
+task_config = {
+    "search_query": "人工智能最新发展",
+    "target_websites": ["arxiv.org", "scholar.google.com"],
+    "extract_elements": ["title", "abstract", "authors"],
+    "max_pages": 5
+}
+
+result = await browser_tool.search_and_extract(task_config)
+```
+
+#### 表单填写
+```python
+# 智能表单填写
+form_config = {
+    "url": "https://example.com/contact",
+    "form_data": {
+        "name": "研究助手",
+        "email": "research@example.com",
+        "message": "自动化研究查询"
+    },
+    "submit": True
+}
+
+result = await browser_tool.fill_form(form_config)
+```
+
+#### 自定义任务
+```python
+# 复杂自定义任务
+custom_task = {
+    "task_description": "在GitHub上搜索Python机器学习项目，提取项目信息",
+    "steps": [
+        {"action": "navigate", "url": "https://github.com"},
+        {"action": "search", "query": "python machine learning"},
+        {"action": "extract", "selector": ".repo-list-item", "limit": 10}
+    ]
+}
+
+result = await browser_tool.execute_custom_task(custom_task)
+```
+
+### 3. 传统浏览器工具 (BrowserTool)
+
+**功能：** 基础的网页浏览、数据抓取、截图等
 
 **配置：**
 ```yaml
@@ -84,30 +152,70 @@ tools:
 }
 ```
 
-### 3. 搜索工具 (SearchTool)
+### 4. 智能搜索工具 (SearchTool)
 
 **功能：** 多搜索引擎集成，智能搜索策略
 
+**支持的搜索引擎：**
+- **Tavily Search** ⭐ 专为 AI 应用设计的专业搜索
+- **DuckDuckGo** - 注重隐私的免费搜索
+- **ArXiv** ⭐ 专业学术论文搜索
+- **Google Search** - 通过 SerpAPI 集成
+- **Bing Search** - 微软必应搜索
+- **Brave Search** ⭐ 注重隐私的独立搜索
+- **Google Docs** ⭐ 专门的文档搜索
+- **Authority Sites** ⭐ 权威网站搜索
+
 **配置：**
 ```yaml
-tools:
-  search_tool:
-    enabled: true
-    timeout: 30
-    max_concurrent_searches: 3
-    engines:
-      - google
-      - bing
-      - duckduckgo
-      - serpapi
+search:
+  default_engine: tavily  # 推荐使用 Tavily
+  engines:
+    tavily:
+      enabled: true
+      include_answer: true
+      include_raw_content: false
+    duckduckgo:
+      enabled: true
+      region: cn-zh
+      safe_search: moderate
+    arxiv:
+      enabled: true
+      max_results: 10
+      sort_by: "relevance"
+    google:
+      enabled: false  # 需要 SerpAPI
+    bing:
+      enabled: false  # 需要 Bing API
+    brave:
+      enabled: false  # 需要 Brave API
 ```
 
 **搜索策略：**
+- **智能策略**: 根据查询类型自动选择最佳搜索引擎
 - **轮询策略**: 依次使用不同搜索引擎
 - **优先级策略**: 按配置的优先级选择
-- **智能策略**: 根据查询类型自动选择
+- **多引擎对比**: 同时使用多个搜索引擎并对比结果
 
-### 4. 文件工具 (FileTool)
+**使用示例：**
+```python
+# 基础搜索
+results = search_tool.search("人工智能发展趋势", max_results=10)
+
+# 指定搜索引擎
+results = search_tool.search("machine learning", engine="arxiv")
+
+# 多引擎搜索
+multi_results = search_tool.search_multiple_engines(
+    "quantum computing",
+    engines=["tavily", "arxiv", "google"]
+)
+
+# 学术论文搜索
+papers = search_tool.search("deep learning", engine="arxiv", max_results=20)
+```
+
+### 5. 文件工具 (FileTool)
 
 **功能：** 本地文件和云存储操作
 

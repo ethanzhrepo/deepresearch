@@ -51,9 +51,38 @@ GOOGLE_API_KEY=your-gemini-key-here
 
 **费用：** 有免费额度，超出后按使用量计费
 
+#### 4. DeepSeek API ⭐ **新增**
+**获取步骤：**
+1. 访问 [DeepSeek Platform](https://platform.deepseek.com/)
+2. 注册账户并完成实名认证
+3. 在 API Keys 页面创建新密钥
+4. 复制生成的密钥
+
+**配置：**
+```env
+DEEPSEEK_API_KEY=sk-your-deepseek-key-here
+```
+
+**费用：** 具有竞争力的定价，支持中文优化
+
 ## 🔍 搜索引擎 API（推荐配置）
 
-#### 1. SerpAPI（推荐）
+#### 1. Tavily Search API（推荐） ⭐ **新增**
+**获取步骤：**
+1. 访问 [Tavily Platform](https://app.tavily.com/home)
+2. 注册账户
+3. 在 API Keys 页面创建新密钥
+4. 复制生成的密钥
+
+**配置：**
+```env
+TAVILY_API_KEY=tvly-your-tavily-key-here
+```
+
+**特点：** 专为 AI 应用设计，高质量搜索结果，AI 优化摘要
+**费用：** 有免费额度，付费计划灵活
+
+#### 2. SerpAPI（推荐）
 **获取步骤：**
 1. 访问 [SerpAPI](https://serpapi.com/)
 2. 注册账户
@@ -67,7 +96,21 @@ SERPAPI_KEY=your-serpapi-key-here
 
 **费用：** 免费额度 100 次/月，付费计划从 $50/月开始
 
-#### 2. Bing Search API
+#### 3. Brave Search API ⭐ **新增**
+**获取步骤：**
+1. 访问 [Brave Search API](https://brave.com/search/api/)
+2. 注册开发者账户
+3. 申请 API 访问权限
+4. 获取 API 密钥
+
+**配置：**
+```env
+BRAVE_SEARCH_API_KEY=your-brave-search-key-here
+```
+
+**特点：** 注重隐私，独立索引，高质量结果
+
+#### 4. Bing Search API
 **获取步骤：**
 1. 访问 [Azure Portal](https://portal.azure.com/)
 2. 创建 "Bing Search v7" 资源
@@ -76,12 +119,12 @@ SERPAPI_KEY=your-serpapi-key-here
 
 **配置：**
 ```env
-BING_SEARCH_API_KEY=your-bing-search-key-here
+BING_SEARCH_KEY=your-bing-search-key-here
 ```
 
 **费用：** 免费层 3000 次/月，付费层从 $4/1000 次开始
 
-#### 3. Google Custom Search（可选）
+#### 5. Google Custom Search（可选）
 **获取步骤：**
 1. 访问 [Google Cloud Console](https://console.cloud.google.com/)
 2. 启用 Custom Search API
@@ -158,10 +201,13 @@ nano .env
 OPENAI_API_KEY=sk-your-openai-key-here
 ANTHROPIC_API_KEY=sk-ant-your-claude-key-here
 GOOGLE_API_KEY=your-gemini-key-here
+DEEPSEEK_API_KEY=sk-your-deepseek-key-here
 
 # 搜索引擎
+TAVILY_API_KEY=tvly-your-tavily-key-here
 SERPAPI_KEY=your-serpapi-key-here
-BING_SEARCH_API_KEY=your-bing-key-here
+BRAVE_SEARCH_API_KEY=your-brave-key-here
+BING_SEARCH_KEY=your-bing-key-here
 
 # 云存储
 GOOGLE_DRIVE_CREDENTIALS=./credentials/google-drive.json
@@ -177,11 +223,13 @@ OLLAMA_MODEL=llama2
 ```bash
 # 临时设置（当前会话）
 export OPENAI_API_KEY="sk-your-key-here"
-export ANTHROPIC_API_KEY="sk-ant-your-key-here"
+export DEEPSEEK_API_KEY="sk-your-deepseek-key-here"
+export TAVILY_API_KEY="tvly-your-tavily-key-here"
 
 # 永久设置（添加到 ~/.bashrc 或 ~/.zshrc）
 echo 'export OPENAI_API_KEY="sk-your-key-here"' >> ~/.bashrc
-echo 'export ANTHROPIC_API_KEY="sk-ant-your-key-here"' >> ~/.bashrc
+echo 'export DEEPSEEK_API_KEY="sk-your-deepseek-key-here"' >> ~/.bashrc
+echo 'export TAVILY_API_KEY="tvly-your-tavily-key-here"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
@@ -192,6 +240,8 @@ source ~/.bashrc
 llm:
   openai:
     api_key: "sk-your-key-here"  # 不推荐
+  deepseek:
+    api_key: "sk-your-deepseek-key-here"  # 不推荐
 ```
 
 ## ✅ 验证配置
